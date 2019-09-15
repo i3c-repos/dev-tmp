@@ -1,0 +1,22 @@
+FROM i3c/base/ubuntu18/ojdk
+ 
+USER root
+ENV EHPL_APP_HOME /opt/ehpl
+
+ENV MAVEN_OPTS -Xmx512m -XX:MaxPermSize=350m 
+
+RUN export mkdir /src && cd /src \
+	&& git clone https://ec.europa.eu/cefdigital/code/scm/ehncp/ehealth.git
+
+RUN cd /src/ehealth \
+	&& mvn clean package install -DskipTests -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true
+
+
+
+COPY run-ehealth.sh /
+RUN  chmod a+x /run-ehealth.sh && ln -sf /run-ehealth.sh /r
+
+#COPY env.sh /src/env.sh
+
+ENTRYPOINT ["/r"]
+CMD [ "startup"]
